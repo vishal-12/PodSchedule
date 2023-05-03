@@ -86,7 +86,7 @@ class VMware:
                 self.service_manager = ServiceManager(server=self.vcenter['url'], username=self.vcenter['username'],
                                                       password=self.vcenter['password'], skip_verification="false")
                 self.service_manager.connect()
-                atexit.register(self.service_manager.disconnect)
+             #   atexit.register(self.service_manager.disconnect)
                 self.client = ClsApiClient(self.service_manager)
                 self.helper = ClsApiHelper(self.client, self.skip_verification)
 
@@ -107,7 +107,7 @@ class VMware:
             logging.error(error_message, 100)
             logging.error("Unable to connect to vsphere server - Traceback {} - Error message: {}".format(str(tb), str(e)), 100,ex=True)
 
-        atexit.register(Disconnect, self.connection)
+#        atexit.register(Disconnect, self.connection)
         self.content = self.connection.RetrieveContent()
 
         # Search for datacenter

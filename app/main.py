@@ -1,5 +1,6 @@
 import argparse
 
+from pyVim.connect import SmartConnect, Disconnect
 from pod.VMware import VMware
 import json
 import sys, traceback
@@ -57,6 +58,9 @@ try:
         print ("Before")
         body.update({"Data": vmware.get_templates_softwares_from_contentlibrary()})
 
+#    Disconnect(vmware.connection)
+#    vmware.client.logout()
+    
     # Restore standard output and get the captured output as a string
     sys.stdout = buffer
     
@@ -66,6 +70,7 @@ try:
     wrapped_output = textwrap.fill(console_output)
     json_output = json.dumps(body)
     print(json_output)
+  
 
 except Exception as e:
     tb=traceback.format_exc()
