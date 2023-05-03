@@ -7,6 +7,11 @@ from pod.logger import logging
 from datetime import datetime
 import textwrap
 from io import StringIO
+import warnings
+
+# Ignore warnings from the OpenSSL module
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="OpenSSL")
+
 
 parser = argparse.ArgumentParser(description='Input information about Vcenter.')
 parser.add_argument('--username', dest='username' , required=False,
@@ -27,9 +32,10 @@ def Body():
      Standard Script Response Format
     :return:
     """
-    return  {"Data": "","Message": "","Error": ""}
+    return  {"Data": "","Info": "","Error": ""}
 
 try:
+        
     vcenter_username = args.username
     vcenter_password = args.password
     vcenter_url = args.url
@@ -44,17 +50,20 @@ try:
         vmware = VMware(vcenter=vcenter)
 
     if (object_identifier == "datastore"):
+        print ("Before")
         body.update({"Data": vmware.GetDatastore()})
-        print (body)
 
+    if (object_identifier == "fetch_template"):
+        print ("Before")
+        body.update({"Data": vmware.get_templates_softwares_from_contentlibrary()})
 
     # Restore standard output and get the captured output as a string
     sys.stdout = buffer
+    
     console_output = captured_output.getvalue()
-    error_output = captured_errors.getvalue()
-
+    
     # Wrap and jsonify the captured output
-    wrapped_output = textwrap.fill(console_output, width=80)
+    wrapped_output = textwrap.fill(console_output)
     json_output = json.dumps(body)
     print(json_output)
 

@@ -1,6 +1,10 @@
 #!bin/bash/env python3
 # encoding=utf8
 
+
+import warnings
+warnings.filterwarnings("ignore")
+
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim, vmodl
 import atexit
