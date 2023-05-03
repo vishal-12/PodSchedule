@@ -142,7 +142,7 @@ class VMware:
             logging.error(error_msg, 100)
 
 
-    def get_templates_softwares_from_contentlibrary(self,object_identifier):
+    def get_templates_softwares_from_contentlibrary(self):
         """
            Get template and software from the Content Library
 
@@ -183,7 +183,7 @@ class VMware:
                                     "globalLibraryOtherTypeSoftwares": software_list_global,
                                     "datastore_templates": datastore_templates}
         template_list.append(templates_and_othertypes)
-        return {object_identifier : template_list}
+        return template_list
 
     def get_obj_using_pyvmomi(self, vimtype, name=None):
         """
@@ -255,7 +255,7 @@ class VMware:
             if cluster.name == cluster_name:
                 return cluster
 
-    def GetDatastore(self,object_identifier, summary=False):
+    def GetDatastore(self,summary=False):
         """
         Get Datastore arrange by freeSpace
         :return:
@@ -273,7 +273,7 @@ class VMware:
                     "accessible": ds.summary.accessible,
                     "freeSpace": ds.summary.freeSpace
                 })
-            return { object_identifier :  datastore_list}
+            return datastore_list
 
         except Exception as e:
             logging.error("GetDataStore list error - {}".format(e),100)

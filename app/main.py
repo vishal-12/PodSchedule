@@ -49,13 +49,13 @@ try:
         vmware = VMware(vcenter=vcenter)
 
     if (object_identifier == "datastore"):
-        logging.data({"Data": vmware.GetDatastore(object_identifier)})
+        logging.data({object_identifier : vmware.GetDatastore(object_identifier)})
 
     if (object_identifier == "fetch_template"):
-        logging.data({"Data": vmware.get_templates_softwares_from_contentlibrary(object_identifier)})
+        logging.data({object_identifier : vmware.get_templates_softwares_from_contentlibrary(object_identifier)})
 
     if (object_identifier == "switch"):
-        logging.data({"Data": vmware.get_public_switch_list(change_job_keys=True)})
+        logging.data({"pod_network" : vmware.get_public_switch_list(change_job_keys=True)})
 
     #Disconnect from VC
     vmware.disconnected_from_all_vc()
