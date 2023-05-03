@@ -58,9 +58,6 @@ try:
         print ("Before")
         body.update({"Data": vmware.get_templates_softwares_from_contentlibrary()})
 
-#    Disconnect(vmware.connection)
-#    vmware.client.logout()
-    
     # Restore standard output and get the captured output as a string
     sys.stdout = buffer
     

@@ -4,7 +4,8 @@
 
 import warnings
 warnings.filterwarnings("ignore")
-
+import textwrap
+from io import StringIO
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim, vmodl
 import atexit
@@ -78,6 +79,9 @@ class VMware:
             Connect to vCenter instances with the help of pyVomi
         """
         try:
+            buffer = sys.stdout
+            sys.stdout = captured_output = StringIO()
+            sys.stderr = captured_errors = StringIO()
             import ssl
             if hasattr(ssl, '_create_unverified_context'):
                 sslContext = ssl._create_unverified_context()
@@ -86,7 +90,7 @@ class VMware:
                 self.service_manager = ServiceManager(server=self.vcenter['url'], username=self.vcenter['username'],
                                                       password=self.vcenter['password'], skip_verification="false")
                 self.service_manager.connect()
-             #   atexit.register(self.service_manager.disconnect)
+                atexit.register(self.service_manager.disconnect)
                 self.client = ClsApiClient(self.service_manager)
                 self.helper = ClsApiHelper(self.client, self.skip_verification)
 
@@ -107,7 +111,7 @@ class VMware:
             logging.error(error_message, 100)
             logging.error("Unable to connect to vsphere server - Traceback {} - Error message: {}".format(str(tb), str(e)), 100,ex=True)
 
-#        atexit.register(Disconnect, self.connection)
+        atexit.register(Disconnect, self.connection)
         self.content = self.connection.RetrieveContent()
 
         # Search for datacenter
@@ -146,6 +150,15 @@ class VMware:
         if cluster_found == False:
             error_msg = "Cluster [%s] not found in Vcenter" % self.cluster
             logging.error(error_msg, 100, ex=True)
+
+        #Vcenter Version
+        self._vcenter_version = self.vmware.connection.content.about.version
+        sys.stdout = buffer
+
+        console_output = captured_output.getvalue()
+
+        # Wrap and jsonify the captured output
+        wrapped_output = textwrap.fill(console_output)
 
     def error_with_traceback(self, obj=None, func_obj=None, script_output=None, host=False, traceback=None,
                              powershell_script=None, logging=None, ex=True, vmName="Appliance",
