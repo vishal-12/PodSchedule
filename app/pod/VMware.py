@@ -79,9 +79,6 @@ class VMware:
             Connect to vCenter instances with the help of pyVomi
         """
         try:
-            buffer = sys.stdout
-            sys.stdout = captured_output = StringIO()
-            sys.stderr = captured_errors = StringIO()
             import ssl
             if hasattr(ssl, '_create_unverified_context'):
                 sslContext = ssl._create_unverified_context()
@@ -153,12 +150,7 @@ class VMware:
 
         #Vcenter Version
         self._vcenter_version = self.vmware.connection.content.about.version
-        sys.stdout = buffer
 
-        console_output = captured_output.getvalue()
-
-        # Wrap and jsonify the captured output
-        wrapped_output = textwrap.fill(console_output)
 
     def error_with_traceback(self, obj=None, func_obj=None, script_output=None, host=False, traceback=None,
                              powershell_script=None, logging=None, ex=True, vmName="Appliance",

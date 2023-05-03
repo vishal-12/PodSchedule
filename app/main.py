@@ -33,7 +33,7 @@ def Body():
      Standard Script Response Format
     :return:
     """
-    return  {"Data": "","Info": "","Error": ""}
+    return  {"Data": "","Info": "","ExitError": "","ExitCode":""}
 
 try:
         
