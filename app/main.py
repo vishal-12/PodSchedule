@@ -54,6 +54,11 @@ try:
     if (object_identifier == "fetch_template"):
         logging.data({"Data": vmware.get_templates_softwares_from_contentlibrary()})
 
+    if (object_identifier == "switch"):
+        logging.data({"Data": vmware.get_public_switch_list(change_job_keys=True)})
+
+    #Disconnect from VC
+    vmware.disconnected_from_all_vc()
 except Exception as e:
     logging.error("Error occured {}".format(e),100)
 logging.exit_log()

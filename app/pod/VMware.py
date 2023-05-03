@@ -2,6 +2,7 @@
 # encoding=utf8
 
 
+from samples.vsphere.common import vapiconnect
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -85,7 +86,7 @@ class VMware:
                 self.service_manager = ServiceManager(server=self.vcenter['url'], username=self.vcenter['username'],
                                                       password=self.vcenter['password'], skip_verification="false")
                 self.service_manager.connect()
-                atexit.register(self.service_manager.disconnect)
+ #               atexit.register(self.service_manager.disconnect)
                 self.client = ClsApiClient(self.service_manager)
                 self.helper = ClsApiHelper(self.client, self.skip_verification)
 
@@ -100,7 +101,7 @@ class VMware:
             tb = traceback.format_exc()
             logging.error("Unable to connect to vsphere server - Traceback {} - Error message: {}".format(str(tb), str(e)),100)
 
-        atexit.register(Disconnect, self.connection)
+#        atexit.register(Disconnect, self.connection)
         self.content = self.connection.RetrieveContent()
 
         # Search for datacenter
@@ -290,3 +291,10 @@ class VMware:
             if dc.name == name:
                 return dc
         logging.error('Failed to find datacenter named %s' % name,100)
+
+    def disconnected_from_all_vc(self):
+        """
+            Disconnected from VC
+        """
+        Disconnect(self.connection)
+        vapiconnect.logout(self.service_manager.stub_config)
