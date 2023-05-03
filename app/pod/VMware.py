@@ -142,7 +142,7 @@ class VMware:
             logging.error(error_msg, 100)
 
 
-    def get_templates_softwares_from_contentlibrary(self):
+    def get_templates_softwares_from_contentlibrary(self,object_identifier):
         """
            Get template and software from the Content Library
 
@@ -183,7 +183,7 @@ class VMware:
                                     "globalLibraryOtherTypeSoftwares": software_list_global,
                                     "datastore_templates": datastore_templates}
         template_list.append(templates_and_othertypes)
-        return template_list
+        return {object_identifier : template_list}
 
     def get_obj_using_pyvmomi(self, vimtype, name=None):
         """

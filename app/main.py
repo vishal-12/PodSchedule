@@ -52,7 +52,7 @@ try:
         logging.data({"Data": vmware.GetDatastore(object_identifier)})
 
     if (object_identifier == "fetch_template"):
-        logging.data({"Data": vmware.get_templates_softwares_from_contentlibrary()})
+        logging.data({"Data": vmware.get_templates_softwares_from_contentlibrary(object_identifier)})
 
     if (object_identifier == "switch"):
         logging.data({"Data": vmware.get_public_switch_list(change_job_keys=True)})
