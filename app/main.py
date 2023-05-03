@@ -49,10 +49,10 @@ try:
         vmware = VMware(vcenter=vcenter)
 
     if (object_identifier == "datastore"):
-        logging.data({object_identifier : vmware.GetDatastore(object_identifier)})
+        logging.data({object_identifier : vmware.GetDatastore()})
 
     if (object_identifier == "fetch_template"):
-        logging.data({object_identifier : vmware.get_templates_softwares_from_contentlibrary(object_identifier)})
+        logging.data({object_identifier : vmware.get_templates_softwares_from_contentlibrary()})
 
     if (object_identifier == "switch"):
         logging.data({"pod_network" : vmware.get_public_switch_list(change_job_keys=True)})
