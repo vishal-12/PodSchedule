@@ -15,7 +15,7 @@ log_json_out = None
 s_logging = log.getLogger("dizzion")
 formatter = log.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-logs = {"info": list(), "error": list(), "data": dict()}
+logs = {"info": list(), "error": list(), "data": dict(),"ExitCode" : 0,"ExitError" : list()}
 inlinelogs = {}
 logger_set = False
 
@@ -95,16 +95,14 @@ class logging:
             return
 
         if type(msg) is list:
-            logs['error'] += msg
+            logs['ExitError'] += msg
+            logs['ExitCode'] = 1
         elif type(msg) is dict:
-            logs["error"].append(msg)
+            logs["ExitError"].append(msg)
+            logs['ExitCode'] = 1
         else:
-            logs['error'].append({"Error message": msg, "Error code": code})
-        if (ex is True):
-            logging.info("ex is true in error funtion of logger")
-            logging.exit_log()
-        else:
-            logging.info("ex is false")
+            logs['ExitError'].append({"Error message": msg})
+            logs['ExitCode'] =1
 
     @staticmethod
     def data(data):
@@ -147,22 +145,11 @@ class logging:
                 logging.info("URL: %s" % log_json_out)
                 logging.info("Data: %s" % json.dumps(logs))
                 logs["info"] = []
-                r = requests.post(log_json_out, json=logs, timeout=30000)
-                if r.status_code != 200:
-                    logging.info("Logger API response error status code: %s" % r.status_code)
-                    logging.info(r.text)
-                else:
-                    logging.info("Callback URL success")
-                    logging.info(r.text)
-                # with open(log_json_out, 'w') as outfile:
-                #     json.dump(logs, outfile)
-            print("__Program__ __Output__")
+            logs.pop("error")
             print(json.dumps(logs))
         except Exception as e:
             logging.info("Error in exit_log: [%s]" % e)
-            # print json.dumps(logs)
             print(logs)
-        #sys.exit(0)
 
     @staticmethod
     def send_inline_logs(inlinelogs):
@@ -221,3 +208,4 @@ class logging:
         self.info("post api response code: [%s]" % r.status_code)
         self.info("task.status passed")
         return -1
+

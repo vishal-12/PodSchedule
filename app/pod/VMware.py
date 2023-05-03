@@ -51,7 +51,6 @@ class VMware:
     """
 
     _vcenter_version = ""
-    _error_message = "Operation - [{}] performed on the guest machine, But failed at Class {} and fucntion {} and Error - {}"
 
     def __init__(self, vcenter, datacenter=None, cluster=None, extra_vars=None):
 
@@ -86,7 +85,7 @@ class VMware:
                 self.service_manager = ServiceManager(server=self.vcenter['url'], username=self.vcenter['username'],
                                                       password=self.vcenter['password'], skip_verification="false")
                 self.service_manager.connect()
-             #   atexit.register(self.service_manager.disconnect)
+                atexit.register(self.service_manager.disconnect)
                 self.client = ClsApiClient(self.service_manager)
                 self.helper = ClsApiHelper(self.client, self.skip_verification)
 
@@ -95,19 +94,13 @@ class VMware:
                                                             password=self.vcenter['password'], session=session)
             else:
                 self.connection = None
-                logging.error("Unable to connect to vsphere server. Error message: _create_unverified_context", 100,ex=True)
-            logging.info("Connect to Vcenter Successfully")
+                logging.error("Unable to connect to vsphere server. Error message: _create_unverified_context", 100)
         except Exception as e:
             self.connection = None
             tb = traceback.format_exc()
-            error_message = self._error_message.format(self.Connect_Vcenter.__func__.__doc__,
-                                                       self.__class__.__name__,
-                                                       self.Connect_Vcenter.__func__.__name__,
-                                                       str(tb))
-            logging.error(error_message, 100)
-            logging.error("Unable to connect to vsphere server - Traceback {} - Error message: {}".format(str(tb), str(e)), 100,ex=True)
+            logging.error("Unable to connect to vsphere server - Traceback {} - Error message: {}".format(str(tb), str(e)),100)
 
-#        atexit.register(Disconnect, self.connection)
+        atexit.register(Disconnect, self.connection)
         self.content = self.connection.RetrieveContent()
 
         # Search for datacenter
@@ -127,7 +120,7 @@ class VMware:
         # Send error if datacenter not found
         if datacenter_found == False:
             error_msg = "Datacenter [%s] not found in Vcenter" % self.datacenter
-            logging.error(error_msg, 100, ex=True)
+            logging.error(error_msg, 100)
 
         # Search for datacenter
         cluster_found = False
@@ -145,50 +138,8 @@ class VMware:
         # Send error if cluster not found
         if cluster_found == False:
             error_msg = "Cluster [%s] not found in Vcenter" % self.cluster
-            logging.error(error_msg, 100, ex=True)
+            logging.error(error_msg, 100)
 
-    def error_with_traceback(self, obj=None, func_obj=None, script_output=None, host=False, traceback=None,
-                             powershell_script=None, logging=None, ex=True, vmName="Appliance",
-                             traceback_for_obj=False):
-        """
-            Common Error Method for Error Logging
-            :obj Script obj
-            :func_obj func obj
-            :script_output
-            :traceback
-            :powershell_script
-            :logging
-            :host
-            return
-        """
-        error_message = "Script has performed operation -- [{}] on Guest Machine [{}] , But Failed at Class [{}] and function [{}]  with Error - [{}] "
-        traceback_msg = "Traceback : [{}]   PowerShell Script :  [{}]"
-
-        if traceback_for_obj is True:
-            error_msg = error_message.format(func_obj.__doc__, vmName, obj.__class__.__name__, func_obj.__name__,
-                                             script_output)
-            if "Failedmessage" in str(script_output):
-                logging.error(error_msg, 100, ex)
-                return
-            else:
-                logging.info(script_output)
-                return script_output
-
-        if script_output['exitcode'] != 0 and script_output['exitcode'] != None or "Failedmessage" in str(
-                script_output):
-            script_error = str(script_output['exitcode']) + str(script_output)
-            try:
-                error_msg = error_message.format(func_obj.__doc__, vmName, obj.__class__.__name__, func_obj.__name__,
-                                                 script_error)
-                logging.error(error_msg, 100)
-                logging.error(traceback_msg.format(traceback, powershell_script), 100, ex)
-            except Exception as e:
-                tb = traceback.format_exc()
-                print("Exception: %s" % tb)
-                logging.error("Traceback : %s" % (str(tb)), 100)
-                logging.error("Exception - %s" % str(e), 100, ex=True)
-        else:
-            logging.info(" {} ".format(script_output))
 
     def get_templates_softwares_from_contentlibrary(self):
         """
@@ -197,6 +148,7 @@ class VMware:
            ARGS : None
            return Dict
         """
+        template_list = list()
         find_spec = content_client.Library.FindSpec()
         find_spec.type = content_client.LibraryModel.LibraryType.LOCAL
         library_stub = content_client.Library(self.service_manager.stub_config)
@@ -223,13 +175,14 @@ class VMware:
                         software_list_local.append(item.name)
                     else:
                         software_list_global.append(item.name)
-        #datastore_templates = [ds.name for ds in self.datacenter.datastore]
+        datastore_templates = [ds.name for ds in self.datacenter.datastore]
         templates_and_othertypes = {"localLibraryTemplates": template_list_local,
                                     "globalLibraryTemplates": template_list_global,
                                     "localLibraryOtherTypeSoftwares": software_list_local,
-                                    "globalLibraryOtherTypeSoftwares": software_list_global}
-                                    #"datastore_templates": datastore_templates}
-        return templates_and_othertypes
+                                    "globalLibraryOtherTypeSoftwares": software_list_global,
+                                    "datastore_templates": datastore_templates}
+        template_list.append(templates_and_othertypes)
+        return template_list
 
     def get_obj_using_pyvmomi(self, vimtype, name=None):
         """
@@ -249,11 +202,11 @@ class VMware:
 
         if not obj:
             if vimtype == [vim.VirtualMachine]:
-                logging.error("Virtual Machine or Virtual Machine image with Name [%s] not found" % name, 100, ex=True)
+                logging.error("Virtual Machine or Virtual Machine image with Name [%s] not found" % name, 100)
             elif vimtype == [vim.DistributedVirtualSwitch]:
                 logging.info("skipped switched in case of vmc")
             else:
-                logging.error("[%s] with Name [%s] not found" % (vimtype, name), 100, ex=True)
+                logging.error("[%s] with Name [%s] not found" % (vimtype, name), 100)
         return obj
 
     def get_public_switch_list(self,change_job_keys = False):
@@ -301,7 +254,7 @@ class VMware:
             if cluster.name == cluster_name:
                 return cluster
 
-    def GetDatastore(self, summary=False):
+    def GetDatastore(self,object_identifier, summary=False):
         """
         Get Datastore arrange by freeSpace
         :return:
@@ -319,17 +272,11 @@ class VMware:
                     "accessible": ds.summary.accessible,
                     "freeSpace": ds.summary.freeSpace
                 })
-            return datastore_list
+            return { object_identifier :  datastore_list}
 
         except Exception as e:
-            error_msg = "GetDataStore list error"
-            logging.error(error_msg, 100)
-            tb = traceback.format_exc()
-            print(("Exception: {}".format(tb)))
-            self.error_with_traceback(obj=self, func_obj=self.GetDatastore,
-                                      script_output=str(e), traceback=str(tb), logging=logging,
-                                      traceback_for_obj=True, ex=True)
-
+            logging.error("GetDataStore list error - {}".format(e),100)
+    
     def get_dc(self, connection, name):
         """
              Get the Datacenter instance
@@ -342,4 +289,4 @@ class VMware:
         for dc in connection.content.rootFolder.childEntity:
             if dc.name == name:
                 return dc
-        logging.error('Failed to find datacenter named %s' % name, 100, ex=True)
+        logging.error('Failed to find datacenter named %s' % name,100)
